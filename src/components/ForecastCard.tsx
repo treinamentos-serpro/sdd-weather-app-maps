@@ -1,7 +1,9 @@
-import type { ForecastDay, Unit } from '../types/weather';
+import { memo } from 'react';
+import { formatDayLabel } from '../lib/format';
 import { formatTemperature } from '../lib/temperature';
-import { getWeatherIcon, getWeatherLabel } from '../lib/weatherCodes';
-import { getDayLabel, getShortDate } from '../lib/format';
+import { getWeatherIcon, getWeatherLabel } from '../lib/weatherCode';
+import type { Unit } from '../types/search';
+import type { ForecastDay } from '../types/weather';
 
 interface ForecastCardProps {
   day: ForecastDay;
@@ -9,20 +11,23 @@ interface ForecastCardProps {
   unit: Unit;
 }
 
-/** Card de um dia da previsão. */
-export default function ForecastCard({ day, index, unit }: ForecastCardProps) {
+function ForecastCard({ day, index, unit }: ForecastCardProps) {
+  const dayLabel = formatDayLabel(day.date, index);
+  const conditionLabel = getWeatherLabel(day.weatherCode);
+
   return (
-    <li className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur-md">
-      <p className="font-semibold">{getDayLabel(day.date, index)}</p>
-      <p className="text-xs text-white/50">{getShortDate(day.date)}</p>
-      <span aria-hidden="true" className="text-3xl" title={getWeatherLabel(day.weatherCode)}>
+    <article className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 text-center shadow-glass backdrop-blur-md">
+      <p className="text-sm font-medium text-white/80">{dayLabel}</p>
+      <span aria-hidden="true" className="text-3xl">
         {getWeatherIcon(day.weatherCode)}
       </span>
-      <p className="text-sm">
-        <span className="font-semibold">{formatTemperature(day.max, unit)}</span>{' '}
-        <span className="text-white/50">{formatTemperature(day.min, unit)}</span>
+      <p className="sr-only">{conditionLabel}</p>
+      <p className="text-sm text-white">
+        <span className="font-semibold">{formatTemperature(day.temperatureMaxC, unit)}</span>{' '}
+        <span className="text-white/50">{formatTemperature(day.temperatureMinC, unit)}</span>
       </p>
-      <p className="text-xs text-accent-400">💧 {day.precipitationProbability}%</p>
-    </li>
+    </article>
   );
 }
+
+export default memo(ForecastCard);
