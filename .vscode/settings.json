@@ -12,5 +12,12 @@
     "editor.defaultFormatter": "biomejs.biome"
   },
   "files.eol": "\n",
-  "chat.promptFiles": true
+  "chat.promptFiles": true,
+  "chat.tools.terminal.autoApprove": {
+    "pnpm": true,
+    "/^mkdir -p /workspaces/sdd-weather-app-maps/src/lib$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
 }

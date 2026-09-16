@@ -1,77 +1,66 @@
-import type { CurrentWeather as CurrentWeatherType, City, Unit } from '../types/weather';
 import { formatTemperature } from '../lib/temperature';
-import { getWeatherIcon, getWeatherLabel } from '../lib/weatherCodes';
+import { getWeatherIcon, getWeatherLabel } from '../lib/weatherCode';
+import type { Unit } from '../types/search';
+import type { City, CurrentWeather as CurrentWeatherData } from '../types/weather';
 
 interface CurrentWeatherProps {
   city: City;
-  current: CurrentWeatherType;
+  current: CurrentWeatherData;
   unit: Unit;
 }
 
-interface MetricProps {
-  icon: string;
-  label: string;
-  value: string;
-}
+const UNAVAILABLE = '—';
 
-function Metric({ icon, label, value }: MetricProps) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md">
-      <span aria-hidden="true" className="text-xl">
-        {icon}
-      </span>
-      <div>
-        <p className="text-xs text-white/50">{label}</p>
-        <p className="font-semibold">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-/** Seção "hero" com as condições atuais da cidade selecionada. */
 export default function CurrentWeather({ city, current, unit }: CurrentWeatherProps) {
-  const location = [city.admin1, city.country].filter(Boolean).join(', ');
+  const conditionLabel = getWeatherLabel(current.weatherCode);
+  const conditionIcon = getWeatherIcon(current.weatherCode);
 
   return (
     <section
-      aria-label="Clima atual"
-      className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md shadow-glass md:p-8"
+      aria-label={`Clima atual em ${city.name}`}
+      className="flex w-full max-w-md flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-6 text-center shadow-glass backdrop-blur-md"
     >
-      <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold md:text-3xl">{city.name}</h2>
-          {location && <p className="text-white/60">{location}</p>}
+      <p className="text-lg font-medium text-white/80">
+        {city.name}
+        {city.admin1 ? `, ${city.admin1}` : ''}
+      </p>
 
-          <div className="mt-6 flex items-center gap-4">
-            <span aria-hidden="true" className="text-6xl">
-              {getWeatherIcon(current.weatherCode)}
-            </span>
-            <span className="text-6xl font-light md:text-7xl">
-              {formatTemperature(current.temperature, unit)}
-            </span>
-          </div>
-          <p className="mt-2 text-white/70">{getWeatherLabel(current.weatherCode)}</p>
-        </div>
+      <span aria-hidden="true" className="text-6xl">
+        {conditionIcon}
+      </span>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Metric icon="💧" label="Umidade" value={`${Math.round(current.humidity)}%`} />
-          <Metric
-            icon="💨"
-            label="Vento"
-            value={`${Math.round(current.windSpeed)} km/h`}
-          />
-          <Metric
-            icon="🌧️"
-            label="Precipitação"
-            value={`${current.precipitation} mm`}
-          />
-          <Metric
-            icon="📊"
-            label="Pressão"
-            value={`${Math.round(current.pressure)} hPa`}
-          />
+      <p className="text-6xl font-semibold tracking-tight text-white sm:text-7xl">
+        {formatTemperature(current.temperatureC, unit)}
+      </p>
+
+      <p className="text-base text-white/70">{conditionLabel}</p>
+
+      <dl className="mt-2 grid w-full grid-cols-2 gap-3 text-left sm:grid-cols-3">
+        <div className="rounded-xl bg-white/5 p-3">
+          <dt className="text-xs text-white/50">Sensação térmica</dt>
+          <dd className="text-sm font-medium text-white">
+            {current.apparentTemperatureC === null
+              ? UNAVAILABLE
+              : formatTemperature(current.apparentTemperatureC, unit)}
+          </dd>
         </div>
-      </div>
+        <div className="rounded-xl bg-white/5 p-3">
+          <dt className="text-xs text-white/50">Umidade</dt>
+          <dd className="text-sm font-medium text-white">
+            {current.humidityPercent === null || !Number.isFinite(current.humidityPercent)
+              ? UNAVAILABLE
+              : `${current.humidityPercent}%`}
+          </dd>
+        </div>
+        <div className="rounded-xl bg-white/5 p-3">
+          <dt className="text-xs text-white/50">Vento</dt>
+          <dd className="text-sm font-medium text-white">
+            {current.windSpeedKmh === null || !Number.isFinite(current.windSpeedKmh)
+              ? UNAVAILABLE
+              : `${current.windSpeedKmh} km/h`}
+          </dd>
+        </div>
+      </dl>
     </section>
   );
 }
