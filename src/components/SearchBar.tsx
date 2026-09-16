@@ -6,12 +6,11 @@ interface SearchBarProps {
 }
 
 function sanitizeSearchQuery(value: string): string {
-  const parsed = new DOMParser().parseFromString(value, 'text/html');
-  parsed.querySelectorAll('script, style, iframe, object, embed').forEach((element) => {
-    element.remove();
-  });
-
-  return (parsed.body.textContent ?? '').replace(/\s+/g, ' ').trim();
+  return value
+    .replace(/<(script|style|iframe|object|embed)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export default function SearchBar({ onSearch, disabled = false }: SearchBarProps) {
